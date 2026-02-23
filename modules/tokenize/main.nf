@@ -4,6 +4,9 @@ process TOKENIZE {
     input:
     path text
 
+    output:
+    path "tokens.json", emit: tokens
+
     script:
     template "tokenize.py"
 }
