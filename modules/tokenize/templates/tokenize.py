@@ -10,7 +10,7 @@ with open("${text}") as f:
     data = f.read()
 
 # Create correct tokenizer class
-tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+tokenizer = CLIPTokenizer.from_pretrained("${clip_tokenizer}")
 
 # Get list of tokens
 all_tokens = tokenizer.encode(data)

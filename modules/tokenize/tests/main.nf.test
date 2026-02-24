@@ -4,12 +4,13 @@ nextflow_process {
     script "../main.nf"
     process "TOKENIZE"
 
-    test("test_tokenize_short_promot") {
+    test("test_tokenize_short_prompt") {
 
         when {
             process {
                 """
                 input[0] = file("$moduleTestDir/input.txt", checkIfExists: true)
+                input[1] = file("${projectDir}/assets/clip_tokenizer")
                 """
             }
         }
@@ -22,12 +23,13 @@ nextflow_process {
         }
     }
 
-    test("test_tokenize_long_promot") {
+    test("test_tokenize_long_prompt") {
 
         when {
             process {
                 """
                 input[0] = file("$moduleTestDir/long_input.txt", checkIfExists: true)
+                input[1] = file("${projectDir}/assets/clip_tokenizer")
                 """
             }
         }

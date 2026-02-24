@@ -3,6 +3,7 @@ process TOKENIZE {
 
     input:
     path text
+    path clip_tokenizer
 
     output:
     path "tokens.json", emit: tokens
