@@ -4,6 +4,8 @@ import csv
 import json
 from transformers import CLIPTokenizer
 
+MAX_LENGTH = 77
+
 with open("${text}") as f:
     data = f.read()
 
@@ -11,11 +13,18 @@ with open("${text}") as f:
 tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
 # Get list of tokens
-tokens = tokenizer.encode(data)
+all_tokens = tokenizer.encode(data)
+
+# Break up into lists of length MAX_LENGTH
+tokens = [all_tokens[i:i+MAX_LENGTH] for i in range(0, len(all_tokens), MAX_LENGTH)]
+if len(tokens[-1]) < MAX_LENGTH:
+    tokens[-1] += [tokenizer.pad_token_id] * (MAX_LENGTH - len(tokens[-1]))
 
 # Get mapping of tokens to strings
-strings = tokenizer.convert_ids_to_tokens(tokens)
-mapping = [(s, t) for t, s in zip(tokens, strings)]
+mappings = []
+for sub_list in tokens:
+    strings = tokenizer.convert_ids_to_tokens(sub_list)
+    mappings.append([(s, t) for t, s in zip(sub_list, strings)])
 
 # Save tokens as JSON
 with open("tokens.json", "w") as f:
@@ -24,5 +33,7 @@ with open("tokens.json", "w") as f:
 # Save mapping as CSV
 with open("mapping.csv", "w", newline="") as f:
     writer = csv.writer(f)
-    writer.writerow(["string", "token"])
-    writer.writerows(mapping)
+    for i, mapping in enumerate(mappings):
+        writer.writerows(mapping)
+        if i < len(mappings) - 1:
+            writer.writerow([])
