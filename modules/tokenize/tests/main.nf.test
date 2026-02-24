@@ -1,0 +1,24 @@
+nextflow_process {
+
+    name "Test TOKENIZE"
+    script "../main.nf"
+    process "TOKENIZE"
+
+    test("test_tokenize") {
+
+        when {
+            process {
+                """
+                input[0] = file("$moduleTestDir/input.txt", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.tokens, process.out.mapping).match() },
+            )
+        }
+    }
+}

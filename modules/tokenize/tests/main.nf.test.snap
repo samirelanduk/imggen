@@ -1,0 +1,17 @@
+{
+    "test_tokenize": {
+        "content": [
+            [
+                "tokens.json:md5,f0b0024f7057aa84b9080a9ca55d6e81"
+            ],
+            [
+                "mapping.csv:md5,405573288dbb95950648d01c046fd233"
+            ]
+        ],
+        "timestamp": "2026-02-24T11:13:51.426995",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}
