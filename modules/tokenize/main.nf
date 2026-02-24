@@ -6,6 +6,7 @@ process TOKENIZE {
 
     output:
     path "tokens.json", emit: tokens
+    path "mapping.csv", emit: mapping
 
     script:
     template "tokenize.py"
