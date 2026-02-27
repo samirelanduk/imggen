@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com///nextflow_schema.json",
+  "title": "samirelanduk/imggen pipeline parameters",
+  "description": "Image generation with stable diffusion.",
+  "type": "object",
+  "properties": {
+    "positive": {
+      "type": "string",
+      "description": "The positive prompt - a description of what your image should contain.",
+      "fa_icon": "fas fa-align-center",
+      "format": "file-path",
+      "mimetype": "text/plain",
+      "pattern": "^\\S+\\.txt$"
+    }
+  },
+  "required": ["positive"]
+}
