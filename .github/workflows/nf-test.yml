@@ -1,0 +1,33 @@
+name: nf-test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NFT_VER: "0.9.4"
+  NFT_WORKDIR: "~"
+  NXF_ANSI_LOG: false
+
+jobs:
+  test:
+    name: nf-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: nf-core/setup-nextflow@v2
+
+      - uses: nf-core/setup-nf-test@v1
+        with:
+          version: ${{ env.NFT_VER }}
+
+      - name: Run nf-test
+        run: nf-test test --ci
