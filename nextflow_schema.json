@@ -19,6 +19,14 @@
           "format": "file-path",
           "mimetype": "text/plain",
           "pattern": "^\\S+\\.txt$"
+        },
+        "model": {
+          "type": "string",
+          "description": "The model to use for image generation.",
+          "fa_icon": "fas fa-file-alt",
+          "format": "file-path",
+          "mimetype": "application/octet-stream",
+          "pattern": "^\\S+\\.safetensors$"
         }
       }
     }
