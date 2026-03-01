@@ -1,4 +1,4 @@
-process TOKENIZE {
+process CLIP_TOKENIZE {
     tag "$text"
     label "process_low"
 

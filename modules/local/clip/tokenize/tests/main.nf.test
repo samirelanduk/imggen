@@ -1,8 +1,8 @@
 nextflow_process {
 
-    name "Test TOKENIZE"
+    name "Test CLIP_TOKENIZE"
     script "../main.nf"
-    process "TOKENIZE"
+    process "CLIP_TOKENIZE"
 
     test("test_tokenize_short_prompt") {
 

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-name: "tokenize"
+name: "CLIP Tokenize"
 description: Tokenize text using a CLIP tokenizer, producing padded token sequences and a token-to-string mapping
 keywords:
   - tokenize
