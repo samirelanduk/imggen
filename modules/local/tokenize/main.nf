@@ -1,5 +1,6 @@
 process TOKENIZE {
     tag "$text"
+    label "process_low"
 
     input:
     path text

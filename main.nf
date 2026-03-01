@@ -1,4 +1,4 @@
-include { TOKENIZE } from "./modules/tokenize"
+include { TOKENIZE } from "./modules/local/tokenize"
 
 workflow {
 
