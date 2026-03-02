@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "CLIP Embeddings"
+description: Generate token and position embeddings from CLIP token sequences using a pretrained CLIP model
+keywords:
+  - embeddings
+  - clip
+  - nlp
+  - transformers
+  - tokens
+tools:
+  - pytorch:
+      description: An open source machine learning framework
+      homepage: https://pytorch.org
+      documentation: https://pytorch.org/docs
+      tool_dev_url: https://github.com/pytorch/pytorch
+      licence: ["BSD-3-Clause"]
+  - safetensors:
+      description: Simple, safe way to store and distribute tensors
+      homepage: https://huggingface.co/docs/safetensors
+      tool_dev_url: https://github.com/huggingface/safetensors
+      licence: ["Apache-2.0"]
+  - clip:
+      description: OpenAI CLIP (Contrastive Language-Image Pre-Training) model
+      homepage: https://github.com/openai/CLIP
+      licence: ["MIT"]
+input:
+  - tokens:
+      type: file
+      description: JSON file containing padded token ID sequences (from CLIP tokenization)
+      pattern: "*.{json}"
+  - clip_model:
+      type: file
+      description: Pretrained CLIP model weights in safetensors format
+      pattern: "*.{safetensors}"
+output:
+  - embeddings:
+      type: file
+      description: |
+        PyTorch tensor file containing the combined token and position
+        embeddings for each input sequence.
+      pattern: "embeddings.pt"
+authors:
+  - "@samirelanduk"
+maintainers:
+  - "@samirelanduk"

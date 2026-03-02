@@ -58,5 +58,3 @@ embeddings = token_vectors + position_vectors
 
 # Save embeddings
 torch.save(embeddings, "embeddings.pt")
-with open("embeddings.json", "w") as f:
-    json.dump(embeddings.tolist(), f, indent=4)
