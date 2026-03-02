@@ -1,9 +1,9 @@
-process CLIP_ENCODE {
+process CLIP_EMBEDDINGS {
 
     input:
     path tokens
     path clip_model
 
     script:
-    template "encode.py"
+    template "embeddings.py"
 }
