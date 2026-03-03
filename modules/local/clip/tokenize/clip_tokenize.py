@@ -22,13 +22,24 @@ with open(text_path) as f:
 # Create correct tokenizer class
 tokenizer = CLIPTokenizer.from_pretrained(clip_tokenizer_path)
 
+# Get token IDs for markers
+bos = tokenizer.bos_token_id
+eos = tokenizer.eos_token_id
+pad = tokenizer.pad_token_id
+
 # Get list of tokens
 all_tokens = tokenizer.encode(data)
+if all_tokens[0] == bos:
+    all_tokens.pop(0)
+if all_tokens[-1] == eos:
+    all_tokens.pop(-1)
 
-# Break up into lists of length MAX_LENGTH
-tokens = [all_tokens[i:i+MAX_LENGTH] for i in range(0, len(all_tokens), MAX_LENGTH)]
+# Break up into lists of length MAX_LENGTH - 2 (for BOS and EOS)
+tokens = [all_tokens[i:i+MAX_LENGTH-2] for i in range(0, len(all_tokens), MAX_LENGTH-2)]
+tokens = [[bos] + t + [eos] for t in tokens]
 if len(tokens[-1]) < MAX_LENGTH:
-    tokens[-1] += [tokenizer.pad_token_id] * (MAX_LENGTH - len(tokens[-1]))
+    tokens[-1].pop(-1)
+    tokens[-1] += [pad] * (MAX_LENGTH - len(tokens[-1]))
 
 # Get mapping of tokens to strings
 mappings = []
