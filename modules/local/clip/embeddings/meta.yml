@@ -33,12 +33,90 @@ input:
       description: Pretrained CLIP model weights in safetensors format
       pattern: "*.{safetensors}"
 output:
-  - embeddings:
-      type: file
-      description: |
-        PyTorch tensor file containing the combined token and position
-        embeddings for each input sequence.
-      pattern: "embeddings.pt"
+  embeddings:
+    type: file
+    description: |
+      PyTorch tensor file containing the combined token and position
+      embeddings for each input sequence.
+    pattern: "embeddings.pt"
+  versions_python:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - python:
+          type: string
+          description: The tool name
+      - python3 --version | cut -d" " -f2:
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_pytorch:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - pytorch:
+          type: string
+          description: The tool name
+      - python3 -c "import torch; print(torch.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_safetensors:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - safetensors:
+          type: string
+          description: The tool name
+      - python3 -c "import safetensors; print(safetensors.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+  versions_numpy:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - numpy:
+          type: string
+          description: The tool name
+      - python3 -c "import numpy; print(numpy.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - python:
+          type: string
+          description: The tool name
+      - python3 --version | cut -d" " -f2:
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - pytorch:
+          type: string
+          description: The tool name
+      - python3 -c "import torch; print(torch.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - safetensors:
+          type: string
+          description: The tool name
+      - python3 -c "import safetensors; print(safetensors.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - numpy:
+          type: string
+          description: The tool name
+      - python3 -c "import numpy; print(numpy.__version__)":
+          type: eval
+          description: The expression to obtain the version of the tool
 authors:
   - "@samirelanduk"
 maintainers:

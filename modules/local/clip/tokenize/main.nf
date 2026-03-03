@@ -9,7 +9,11 @@ process CLIP_TOKENIZE {
     output:
     path "tokens.json", emit: tokens
     path "mapping.csv", emit: mapping
+    tuple val("${task.process}"), val('python'), eval('python3 --version | cut -d" " -f2'), topic: versions
+    tuple val("${task.process}"), val('transformers'), eval('python3 -c "import transformers; print(transformers.__version__)"'), topic: versions
 
     script:
-    template "tokenize.py"
+    """
+    python3 ${moduleDir}/clip_tokenize.py ${text} ${clip_tokenizer}
+    """
 }
