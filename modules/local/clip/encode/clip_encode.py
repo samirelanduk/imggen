@@ -16,6 +16,7 @@ model_path = args.model_path
 
 def load_tensors(model_path):
     with safetensors.safe_open(model_path, framework="pt", device="cpu") as f:
+        get_tensor = lambda key: f.get_tensor(key).float()
         tensors = {"final_norm": {"weight": None, "bias": None}, "layers": {}}
         layer_numbers = set()
         for key in f.keys():
@@ -35,33 +36,57 @@ def load_tensors(model_path):
                 "mlp1_bias": None,
                 "mlp2_weight": None,
                 "mlp2_bias": None,
+                "attn_q_weight": None,
+                "attn_k_weight": None,
+                "attn_v_weight": None,
+                "attn_out_weight": None,
+                "attn_q_bias": None,
+                "attn_k_bias": None,
+                "attn_v_bias": None,
+                "attn_out_bias": None,
             }
         for key in f.keys():
             if "cond_stage_model" not in key.lower(): continue
             layer_number_match = re.search(r"layers\.(\d+)\.(.*)", key)
             if not layer_number_match:
                 if key.endswith("final_layer_norm.weight"):
-                    tensors["final_norm"]["weight"] = f.get_tensor(key)
+                    tensors["final_norm"]["weight"] = get_tensor(key)
                 elif key.endswith("final_layer_norm.bias"):
-                    tensors["final_norm"]["bias"] = f.get_tensor(key)
+                    tensors["final_norm"]["bias"] = get_tensor(key)
                 continue
             layer_number = int(layer_number_match.group(1))
             if key.endswith("norm1.weight"):
-                tensors["layers"][layer_number]["norm1_weight"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["norm1_weight"] = get_tensor(key)
             elif key.endswith("norm1.bias"):
-                tensors["layers"][layer_number]["norm1_bias"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["norm1_bias"] = get_tensor(key)
             elif key.endswith("norm2.weight"):
-                tensors["layers"][layer_number]["norm2_weight"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["norm2_weight"] = get_tensor(key)
             elif key.endswith("norm2.bias"):
-                tensors["layers"][layer_number]["norm2_bias"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["norm2_bias"] = get_tensor(key)
             elif key.endswith("mlp.fc1.weight"):
-                tensors["layers"][layer_number]["mlp1_weight"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["mlp1_weight"] = get_tensor(key)
             elif key.endswith("mlp.fc1.bias"):
-                tensors["layers"][layer_number]["mlp1_bias"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["mlp1_bias"] = get_tensor(key)
             elif key.endswith("mlp.fc2.weight"):
-                tensors["layers"][layer_number]["mlp2_weight"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["mlp2_weight"] = get_tensor(key)
             elif key.endswith("mlp.fc2.bias"):
-                tensors["layers"][layer_number]["mlp2_bias"] = f.get_tensor(key)
+                tensors["layers"][layer_number]["mlp2_bias"] = get_tensor(key)
+            elif key.endswith("attn.q_proj.weight"):
+                tensors["layers"][layer_number]["attn_q_weight"] = get_tensor(key)
+            elif key.endswith("attn.q_proj.bias"):
+                tensors["layers"][layer_number]["attn_q_bias"] = get_tensor(key)
+            elif key.endswith("attn.k_proj.weight"):
+                tensors["layers"][layer_number]["attn_k_weight"] = get_tensor(key)
+            elif key.endswith("attn.k_proj.bias"):
+                tensors["layers"][layer_number]["attn_k_bias"] = get_tensor(key)
+            elif key.endswith("attn.v_proj.weight"):
+                tensors["layers"][layer_number]["attn_v_weight"] = get_tensor(key)
+            elif key.endswith("attn.v_proj.bias"):
+                tensors["layers"][layer_number]["attn_v_bias"] = get_tensor(key)
+            elif key.endswith("attn.out_proj.weight"):
+                tensors["layers"][layer_number]["attn_out_weight"] = get_tensor(key)
+            elif key.endswith("attn.out_proj.bias"):
+                tensors["layers"][layer_number]["attn_out_bias"] = get_tensor(key)
         for layer_number in layer_numbers:
             for key in tensors["layers"][layer_number]:
                 if tensors["layers"][layer_number][key] is None:
@@ -71,11 +96,6 @@ def load_tensors(model_path):
             if tensors["final_norm"][key] is None:
                 print(f"Final norm {key} is None")
                 sys.exit(1)
-        for layer_number in layer_numbers:
-            for key in tensors["layers"][layer_number]:
-                tensors["layers"][layer_number][key] = tensors["layers"][layer_number][key].float()
-        for key in tensors["final_norm"]:
-            tensors["final_norm"][key] = tensors["final_norm"][key].float()
         return tensors
 
 # Load tensors
@@ -92,7 +112,23 @@ for i, layer_number in enumerate(sorted(tensors["layers"].keys())):
     norm1_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["norm1_bias"])
     conditioning = norm1_layer(conditioning)
 
-    # Attention
+    # Attention Q
+    attn_q_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_q_weight"].shape[0], tensors["layers"][layer_number]["attn_q_weight"].shape[1], device="cpu")
+    attn_q_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_q_weight"])
+    attn_q_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_q_bias"])
+    Q = attn_q_layer(conditioning)
+
+    # Attention K
+    attn_k_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_k_weight"].shape[0], tensors["layers"][layer_number]["attn_k_weight"].shape[1], device="cpu")
+    attn_k_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_k_weight"])
+    attn_k_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_k_bias"])
+    K = attn_k_layer(conditioning)
+
+    # Attention V
+    attn_v_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_v_weight"].shape[0], tensors["layers"][layer_number]["attn_v_weight"].shape[1], device="cpu")
+    attn_v_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_v_weight"])
+    attn_v_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_v_bias"])
+    V = attn_v_layer(conditioning)
 
     # Normalization 2
     norm2_layer = torch.nn.LayerNorm(tensors["layers"][layer_number]["norm2_weight"].shape[0], device="cpu")
