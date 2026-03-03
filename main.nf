@@ -1,5 +1,6 @@
 include { CLIP_TOKENIZE } from "./modules/local/clip/tokenize"
 include { CLIP_EMBEDDINGS } from "./modules/local/clip/embeddings"
+include { CLIP_ENCODE } from "./modules/local/clip/encode"
 
 workflow {
 
@@ -11,4 +12,7 @@ workflow {
     ch_tokens = CLIP_TOKENIZE.out.tokens
 
     CLIP_EMBEDDINGS(ch_tokens, model_ch)
+    ch_embeddings = CLIP_EMBEDDINGS.out.embeddings
+
+    CLIP_ENCODE(ch_embeddings, model_ch)
 }
