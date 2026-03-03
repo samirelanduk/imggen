@@ -6,6 +6,8 @@ import argparse
 import safetensors
 import torch
 
+HEADS = 12
+
 # Get paths
 parser = argparse.ArgumentParser(description="Encode embeddings using a pretrained CLIP model.")
 parser.add_argument("embeddings_path", type=str, help="Path to the embeddings file (.pt)")
@@ -98,11 +100,22 @@ def load_tensors(model_path):
                 sys.exit(1)
         return tensors
 
+
+def quick_gelu(x):
+    return x * torch.sigmoid(1.702 * x)
+
 # Load tensors
 tensors = load_tensors(model_path)
 
 # Load embeddings
 conditioning = torch.load(embeddings_path).float()
+
+# Create mask
+mask = torch.full(
+    (conditioning.shape[1], conditioning.shape[1]),
+    -torch.finfo(conditioning.dtype).max,
+    device="cpu"
+).triu_(1)
 
 for i, layer_number in enumerate(sorted(tensors["layers"].keys())):
     print(f"Layer {i + 1} of {len(tensors['layers'])}...")
@@ -110,46 +123,68 @@ for i, layer_number in enumerate(sorted(tensors["layers"].keys())):
     norm1_layer = torch.nn.LayerNorm(tensors["layers"][layer_number]["norm1_weight"].shape[0], device="cpu")
     norm1_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["norm1_weight"])
     norm1_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["norm1_bias"])
-    conditioning = norm1_layer(conditioning)
+    attn_conditioning = norm1_layer(conditioning)
 
     # Attention Q
-    attn_q_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_q_weight"].shape[0], tensors["layers"][layer_number]["attn_q_weight"].shape[1], device="cpu")
+    attn_q_layer = torch.nn.Linear(1, 1, device="cpu")
     attn_q_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_q_weight"])
     attn_q_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_q_bias"])
-    Q = attn_q_layer(conditioning)
+    Q = attn_q_layer(attn_conditioning)
 
     # Attention K
-    attn_k_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_k_weight"].shape[0], tensors["layers"][layer_number]["attn_k_weight"].shape[1], device="cpu")
+    attn_k_layer = torch.nn.Linear(1, 1, device="cpu")
     attn_k_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_k_weight"])
     attn_k_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_k_bias"])
-    K = attn_k_layer(conditioning)
+    K = attn_k_layer(attn_conditioning)
 
     # Attention V
-    attn_v_layer = torch.nn.Linear(tensors["layers"][layer_number]["attn_v_weight"].shape[0], tensors["layers"][layer_number]["attn_v_weight"].shape[1], device="cpu")
+    attn_v_layer = torch.nn.Linear(1, 1, device="cpu")
     attn_v_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_v_weight"])
     attn_v_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_v_bias"])
-    V = attn_v_layer(conditioning)
+    V = attn_v_layer(attn_conditioning)
+
+    # Apply attention
+    head_dim = Q.shape[-1] // HEADS
+    batch = Q.shape[0]
+    seq_len = Q.shape[1]
+    Q = Q.view(batch, seq_len, HEADS, head_dim).transpose(1, 2)
+    K = K.view(batch, seq_len, HEADS, head_dim).transpose(1, 2)
+    V = V.view(batch, seq_len, HEADS, head_dim).transpose(1, 2)
+    scores = Q @ K.transpose(-2, -1) / (Q.shape[-1] ** 0.5)
+    scores = scores + mask
+    attn_output = torch.softmax(scores, dim=-1) @ V
+    attn_output = attn_output.transpose(1, 2).contiguous().view(batch, seq_len, -1)
+    attn_out_layer = torch.nn.Linear(1, 1, device="cpu")
+    attn_out_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["attn_out_weight"])
+    attn_out_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["attn_out_bias"])
+    attn_output = attn_out_layer(attn_output)
+
+    # Add to conditioning
+    conditioning += attn_output
 
     # Normalization 2
     norm2_layer = torch.nn.LayerNorm(tensors["layers"][layer_number]["norm2_weight"].shape[0], device="cpu")
     norm2_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["norm2_weight"])
     norm2_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["norm2_bias"])
-    conditioning = norm2_layer(conditioning)
+    mlp_conditioning = norm2_layer(conditioning)
 
     # MLP 1
-    mlp1_layer = torch.nn.Linear(tensors["layers"][layer_number]["mlp1_weight"].shape[0], tensors["layers"][layer_number]["mlp1_weight"].shape[1], device="cpu")
+    mlp1_layer = torch.nn.Linear(1, 1, device="cpu")
     mlp1_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["mlp1_weight"])
     mlp1_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["mlp1_bias"])
-    conditioning = mlp1_layer(conditioning)
+    mlp_conditioning = mlp1_layer(mlp_conditioning)
 
     # Activation
-    conditioning = torch.nn.functional.gelu(conditioning)
+    mlp_conditioning = quick_gelu(mlp_conditioning)
 
     # MLP 2
-    mlp2_layer = torch.nn.Linear(tensors["layers"][layer_number]["mlp2_weight"].shape[0], tensors["layers"][layer_number]["mlp2_weight"].shape[1], device="cpu")
+    mlp2_layer = torch.nn.Linear(1, 1, device="cpu")
     mlp2_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["mlp2_weight"])
     mlp2_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["mlp2_bias"])
-    conditioning = mlp2_layer(conditioning)
+    mlp_conditioning = mlp2_layer(mlp_conditioning)
+
+    # Add to conditioning
+    conditioning += mlp_conditioning
 
 # Perform final normalization
 norm_layer = torch.nn.LayerNorm(tensors["final_norm"]["weight"].shape[0], device="cpu")
