@@ -31,6 +31,10 @@ def load_tensors(model_path):
                 "norm1_bias": None,
                 "norm2_weight": None,
                 "norm2_bias": None,
+                "mlp1_weight": None,
+                "mlp1_bias": None,
+                "mlp2_weight": None,
+                "mlp2_bias": None,
             }
         for key in f.keys():
             if "cond_stage_model" not in key.lower(): continue
@@ -50,6 +54,14 @@ def load_tensors(model_path):
                 tensors["layers"][layer_number]["norm2_weight"] = f.get_tensor(key)
             elif key.endswith("norm2.bias"):
                 tensors["layers"][layer_number]["norm2_bias"] = f.get_tensor(key)
+            elif key.endswith("mlp.fc1.weight"):
+                tensors["layers"][layer_number]["mlp1_weight"] = f.get_tensor(key)
+            elif key.endswith("mlp.fc1.bias"):
+                tensors["layers"][layer_number]["mlp1_bias"] = f.get_tensor(key)
+            elif key.endswith("mlp.fc2.weight"):
+                tensors["layers"][layer_number]["mlp2_weight"] = f.get_tensor(key)
+            elif key.endswith("mlp.fc2.bias"):
+                tensors["layers"][layer_number]["mlp2_bias"] = f.get_tensor(key)
         for layer_number in layer_numbers:
             for key in tensors["layers"][layer_number]:
                 if tensors["layers"][layer_number][key] is None:
@@ -59,13 +71,18 @@ def load_tensors(model_path):
             if tensors["final_norm"][key] is None:
                 print(f"Final norm {key} is None")
                 sys.exit(1)
+        for layer_number in layer_numbers:
+            for key in tensors["layers"][layer_number]:
+                tensors["layers"][layer_number][key] = tensors["layers"][layer_number][key].float()
+        for key in tensors["final_norm"]:
+            tensors["final_norm"][key] = tensors["final_norm"][key].float()
         return tensors
 
 # Load tensors
 tensors = load_tensors(model_path)
 
 # Load embeddings
-conditioning = torch.load(embeddings_path)
+conditioning = torch.load(embeddings_path).float()
 
 for i, layer_number in enumerate(sorted(tensors["layers"].keys())):
     print(f"Layer {i + 1} of {len(tensors['layers'])}...")
@@ -83,8 +100,20 @@ for i, layer_number in enumerate(sorted(tensors["layers"].keys())):
     norm2_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["norm2_bias"])
     conditioning = norm2_layer(conditioning)
 
-    # NN
-    pass
+    # MLP 1
+    mlp1_layer = torch.nn.Linear(tensors["layers"][layer_number]["mlp1_weight"].shape[0], tensors["layers"][layer_number]["mlp1_weight"].shape[1], device="cpu")
+    mlp1_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["mlp1_weight"])
+    mlp1_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["mlp1_bias"])
+    conditioning = mlp1_layer(conditioning)
+
+    # Activation
+    conditioning = torch.nn.functional.gelu(conditioning)
+
+    # MLP 2
+    mlp2_layer = torch.nn.Linear(tensors["layers"][layer_number]["mlp2_weight"].shape[0], tensors["layers"][layer_number]["mlp2_weight"].shape[1], device="cpu")
+    mlp2_layer.weight = torch.nn.Parameter(tensors["layers"][layer_number]["mlp2_weight"])
+    mlp2_layer.bias = torch.nn.Parameter(tensors["layers"][layer_number]["mlp2_bias"])
+    conditioning = mlp2_layer(conditioning)
 
 # Perform final normalization
 norm_layer = torch.nn.LayerNorm(tensors["final_norm"]["weight"].shape[0], device="cpu")
