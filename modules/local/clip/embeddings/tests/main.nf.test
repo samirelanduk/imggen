@@ -9,7 +9,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$moduleTestDir/tokens.json", checkIfExists: true)
+                input[0] = [[id: "test"], file("$moduleTestDir/tokens.json", checkIfExists: true)]
                 input[1] = file("$moduleTestDir/test_model.safetensors", checkIfExists: true)
                 """
             }

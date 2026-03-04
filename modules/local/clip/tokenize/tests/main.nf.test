@@ -9,7 +9,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$moduleTestDir/input.txt", checkIfExists: true)
+                input[0] = [[id: "A_photo_of"], "A photo of a cat, sat on a mat."]
                 input[1] = file("${projectDir}/assets/clip_tokenizer")
                 """
             }
@@ -28,7 +28,8 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$moduleTestDir/long_input.txt", checkIfExists: true)
+                def long_prompt = file("$moduleTestDir/long_input.txt").text.trim()
+                input[0] = [[id: "a_vast_ancient"], long_prompt]
                 input[1] = file("${projectDir}/assets/clip_tokenizer")
                 """
             }

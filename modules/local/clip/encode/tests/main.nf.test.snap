@@ -2,10 +2,15 @@
     "test_encode": {
         "content": [
             [
-                "conditioning.pt:md5,9d5536a024465d843f051e8a22b5c1b1"
+                [
+                    {
+                        "id": "test"
+                    },
+                    "conditioning.pt:md5,9d5536a024465d843f051e8a22b5c1b1"
+                ]
             ]
         ],
-        "timestamp": "2026-03-04T00:55:13.039113",
+        "timestamp": "2026-03-04T01:12:10.172482",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"

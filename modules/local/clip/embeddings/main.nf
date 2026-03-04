@@ -1,13 +1,13 @@
 process CLIP_EMBEDDINGS {
-    tag "$tokens"
+    tag "${meta.id}"
     label "process_low"
 
     input:
-    path tokens
+    tuple val(meta), path(tokens)
     path clip_model
 
     output:
-    path "embeddings.pt", emit: embeddings
+    tuple val(meta), path("embeddings.pt"), emit: embeddings
     tuple val("${task.process}"), val('python'), eval('python3 --version | cut -d" " -f2'), topic: versions
     tuple val("${task.process}"), val('pytorch'), eval('python3 -c "import torch; print(torch.__version__)"'), topic: versions
     tuple val("${task.process}"), val('safetensors'), eval('python3 -c "import safetensors; print(safetensors.__version__)"'), topic: versions

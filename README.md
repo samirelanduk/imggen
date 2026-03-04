@@ -7,9 +7,6 @@ imggen is a generative AI pipeline which uses Stable Diffusion to generate image
 
 ## Usage
 
-Create a prompt describing your image, and start the pipeline:
-
 ```bash
-echo "A beautiful sunset over a mountain lake" > prompt.txt
-nextflow run main.nf --positive prompt.txt --model model.safetensors
+nextflow run main.nf --prompt "Some nice flowers" --model model.safetensors
 ```
