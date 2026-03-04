@@ -2,13 +2,13 @@
     "test_tokenize_long_prompt": {
         "content": [
             [
-                "tokens.json:md5,c23e92c55822033363b3925f8f4133f8"
+                "tokens.json:md5,67b99ae444ffa3dd8a832606b1125d33"
             ],
             [
-                "mapping.csv:md5,bf2292af7cde676b5528fbc10f815e01"
+                "mapping.csv:md5,c88c0af0b30c37fa751e0a640f94dfba"
             ]
         ],
-        "timestamp": "2026-02-24T23:42:09.42749",
+        "timestamp": "2026-03-04T00:00:42.673495",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
@@ -23,7 +23,7 @@
                 "mapping.csv:md5,463e679fcba5d049f34febdd8225f106"
             ]
         ],
-        "timestamp": "2026-02-24T23:42:05.469865",
+        "timestamp": "2026-03-04T00:00:36.34794",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
