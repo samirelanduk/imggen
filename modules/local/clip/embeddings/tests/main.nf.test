@@ -1,0 +1,25 @@
+nextflow_process {
+
+    name "Test CLIP_EMBEDDINGS"
+    script "../main.nf"
+    process "CLIP_EMBEDDINGS"
+
+    test("test_embeddings") {
+
+        when {
+            process {
+                """
+                input[0] = file("$moduleTestDir/tokens.json", checkIfExists: true)
+                input[1] = file("$moduleTestDir/test_model.safetensors", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.embeddings).match() },
+            )
+        }
+    }
+}
