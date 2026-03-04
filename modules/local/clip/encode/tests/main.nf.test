@@ -1,0 +1,25 @@
+nextflow_process {
+
+    name "Test CLIP_ENCODE"
+    script "../main.nf"
+    process "CLIP_ENCODE"
+
+    test("test_encode") {
+
+        when {
+            process {
+                """
+                input[0] = file("$moduleTestDir/embeddings.pt", checkIfExists: true)
+                input[1] = file("$moduleTestDir/test_model.safetensors", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.conditioning).match() },
+            )
+        }
+    }
+}
