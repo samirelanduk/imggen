@@ -31,6 +31,16 @@
           "format": "file-path",
           "mimetype": "application/octet-stream",
           "pattern": "^\\S+\\.safetensors$"
+        },
+        "width": {
+          "type": "integer",
+          "description": "Width of the generated image in pixels. Defaults to height if only height is set, or 512 if neither is set.",
+          "fa_icon": "fas fa-arrows-alt-h"
+        },
+        "height": {
+          "type": "integer",
+          "description": "Height of the generated image in pixels. Defaults to width if only width is set, or 512 if neither is set.",
+          "fa_icon": "fas fa-arrows-alt-v"
         }
       }
     }

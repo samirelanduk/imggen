@@ -12,6 +12,9 @@ workflow {
         error "Please provide either --prompt or --prompt_file."
     }
 
+    def width = params.width ?: (params.height ?: 512)
+    def height = params.height ?: width
+
     def prompt_text = params.prompt_file
         ? file(params.prompt_file, checkIfExists: true).text.trim()
         : params.prompt.trim()
