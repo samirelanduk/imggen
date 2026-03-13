@@ -1,7 +1,5 @@
-include { CLIP_TOKENIZE } from "./modules/local/clip/tokenize"
-include { CLIP_EMBEDDINGS } from "./modules/local/clip/embeddings"
-include { CLIP_ENCODE } from "./modules/local/clip/encode"
 include { CLIP_CONDITION } from "./subworkflows/local/clip_condition"
+include { BLANK_LATENT } from "./modules/local/latent/blank"
 
 workflow {
 
@@ -10,6 +8,9 @@ workflow {
     }
     if (!params.prompt && !params.prompt_file) {
         error "Please provide either --prompt or --prompt_file."
+    }
+    if (!params.model) {
+        error "Please provide a model checkpoint with --model."
     }
 
     def width = params.width ?: (params.height ?: 512)
@@ -26,5 +27,6 @@ workflow {
     clip_tokenizer_ch = channel.fromPath("${projectDir}/assets/clip_tokenizer", checkIfExists: true)
     model_ch = channel.fromPath(params.model, checkIfExists: true)
 
+    BLANK_LATENT(Channel.of(tuple(meta, width, height)))
     CLIP_CONDITION(prompt_ch, clip_tokenizer_ch, model_ch)
 }

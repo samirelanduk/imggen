@@ -1,0 +1,36 @@
+{
+    "test_blank_latent_768x512": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "latent.pt:md5,bcbe9072d763139b9061fc78f6529f72"
+                ]
+            ]
+        ],
+        "timestamp": "2026-03-13T16:46:36.787998",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "test_blank_latent_512x512": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "latent.pt:md5,f3096e781951dcafdb1cb7b597c9b54d"
+                ]
+            ]
+        ],
+        "timestamp": "2026-03-13T16:46:29.648105",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}
