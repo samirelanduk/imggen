@@ -1,6 +1,6 @@
 process BLANK_LATENT {
     tag "${meta.id}"
-    label "process_single"
+    label "process_low"
 
     input:
     tuple val(meta), val(width), val(height)
