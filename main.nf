@@ -34,6 +34,6 @@ workflow {
     denoise_input_ch = BLANK_LATENT.out.latent
         .join(CLIP_CONDITION.out.conditioning)
 
-    DENOISE(denoise_input_ch, model_ch)
+    DENOISE(denoise_input_ch, model_ch, params.steps)
 
 }

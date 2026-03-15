@@ -5,6 +5,7 @@ process DENOISE {
     input:
     tuple val(meta), path(latent), path(conditioning)
     path model
+    val steps
 
     output:
     tuple val(meta), path("denoised.pt"), emit: denoised
@@ -15,6 +16,6 @@ process DENOISE {
 
     script:
     """
-    python3 ${moduleDir}/denoise.py ${latent} ${conditioning} ${model}
+    python3 ${moduleDir}/denoise.py ${latent} ${conditioning} ${model} --steps ${steps}
     """
 }

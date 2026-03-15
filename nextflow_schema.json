@@ -41,6 +41,12 @@
           "type": "integer",
           "description": "Height of the generated image in pixels. Defaults to width if only width is set, or 512 if neither is set.",
           "fa_icon": "fas fa-arrows-alt-v"
+        },
+        "steps": {
+          "type": "integer",
+          "default": 20,
+          "description": "Number of denoising steps.",
+          "fa_icon": "fas fa-shoe-prints"
         }
       }
     }
