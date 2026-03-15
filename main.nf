@@ -1,5 +1,6 @@
 include { CLIP_CONDITION } from "./subworkflows/local/clip_condition"
 include { BLANK_LATENT } from "./modules/local/latent/blank"
+include { DENOISE } from "./modules/local/denoise"
 
 workflow {
 
@@ -29,4 +30,10 @@ workflow {
 
     BLANK_LATENT(Channel.of(tuple(meta, width, height)))
     CLIP_CONDITION(prompt_ch, clip_tokenizer_ch, model_ch)
+
+    denoise_input_ch = BLANK_LATENT.out.latent
+        .join(CLIP_CONDITION.out.conditioning)
+
+    DENOISE(denoise_input_ch, model_ch)
+
 }
