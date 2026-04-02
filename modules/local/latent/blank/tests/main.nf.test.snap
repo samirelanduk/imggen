@@ -6,11 +6,11 @@
                     {
                         "id": "test"
                     },
-                    "latent.pt:md5,bcbe9072d763139b9061fc78f6529f72"
+                    "latent.pt:md5,059848eedd19995c8d5973e39519db59"
                 ]
             ]
         ],
-        "timestamp": "2026-03-13T16:46:36.787998",
+        "timestamp": "2026-04-02T23:05:22.249278",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
@@ -23,11 +23,11 @@
                     {
                         "id": "test"
                     },
-                    "latent.pt:md5,f3096e781951dcafdb1cb7b597c9b54d"
+                    "latent.pt:md5,601e21a8870a85de1d2bd222c6698020"
                 ]
             ]
         ],
-        "timestamp": "2026-03-13T16:46:29.648105",
+        "timestamp": "2026-04-02T23:05:19.020965",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"

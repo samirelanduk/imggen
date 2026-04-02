@@ -6,11 +6,11 @@
                     {
                         "id": "test"
                     },
-                    "embeddings.pt:md5,10e824076f8439c2e49ea4252d8af493"
+                    "embeddings.pt:md5,ced4b57d8a52c7b7284972c8b64cee25"
                 ]
             ]
         ],
-        "timestamp": "2026-03-04T01:12:02.047681",
+        "timestamp": "2026-04-02T23:05:03.483398",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"

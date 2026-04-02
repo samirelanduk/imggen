@@ -4,6 +4,14 @@ include { DENOISE } from "./modules/local/denoise"
 
 workflow {
 
+    if (!file("${projectDir}/.venv/bin/activate").exists()) {
+        def proc = ["bash", "-c", "python3 -m venv ${projectDir}/.venv && ${projectDir}/.venv/bin/pip install -q -r ${projectDir}/requirements.txt"].execute()
+        proc.waitFor()
+        if (proc.exitValue() != 0) {
+            error "Failed to set up Python environment:\n${proc.err.text}"
+        }
+    }
+
     if (params.prompt && params.prompt_file) {
         error "Please provide either --prompt or --prompt_file, not both."
     }
