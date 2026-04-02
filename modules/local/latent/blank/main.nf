@@ -12,6 +12,6 @@ process BLANK_LATENT {
 
     script:
     """
-    python3 -c "import torch; torch.save(torch.zeros(1, 4, ${height} // 8, ${width} // 8), 'latent.pt')"
+    python3 -m pydiffuser save_blank_latent --path latent.pt --width ${width} --height ${height}
     """
 }
