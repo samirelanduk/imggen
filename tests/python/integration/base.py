@@ -1,5 +1,4 @@
 import subprocess
-import os
 from unittest import TestCase
 
 class IntegrationTestCase(TestCase):

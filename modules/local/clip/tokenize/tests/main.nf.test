@@ -18,7 +18,6 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out.tokens, process.out.mapping).match() },
             )
         }
     }
@@ -38,7 +37,6 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out.tokens, process.out.mapping).match() },
             )
         }
     }

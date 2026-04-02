@@ -14,9 +14,6 @@ process CLIP_TOKENIZE {
 
     script:
     """
-    cat << 'PROMPT_EOF' > prompt.txt
-${prompt}
-PROMPT_EOF
-    python3 ${moduleDir}/clip_tokenize.py prompt.txt ${clip_tokenizer}
+    python3 -m pydiffuser clip_tokenize --text "${prompt}" --clip_tokenizer "${clip_tokenizer}" --tokens tokens.json --mappings mapping.csv
     """
 }
