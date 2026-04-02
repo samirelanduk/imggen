@@ -6,6 +6,12 @@
 
 nf-diffuser is a generative AI pipeline which uses Stable Diffusion to generate images.
 
+## Requirements
+
+nf-diffuser requires Python to be installed.
+On first run it will create a .venv directory containing a virtual environment and install any needed packages.
+All processes will use this environment.
+
 ## Usage
 
 ```bash
