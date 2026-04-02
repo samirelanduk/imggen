@@ -1,4 +1,5 @@
 [![GitHub Actions CI Status](https://github.com/samirelanduk/nf-diffuser/actions/workflows/nf-test.yml/badge.svg)](https://github.com/samirelanduk/nf-diffuser/actions/workflows/nf-test.yml)
+[![Python tests](https://github.com/samirelanduk/nf-diffuser/actions/workflows/python-tests.yml/badge.svg)](https://github.com/samirelanduk/nf-diffuser/actions/workflows/python-tests.yml)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 # nf-diffuser
