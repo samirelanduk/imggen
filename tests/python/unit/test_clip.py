@@ -1,12 +1,16 @@
 import os
+import torch
 from unittest import TestCase
-from unittest.mock import patch, mock_open, call
+from unittest.mock import patch, mock_open, call, MagicMock
 from transformers import CLIPTokenizer
 from pydiffuser.clip import (
     tokenize,
+    embed,
     _text_to_tokens,
     _break_up_tokens,
     _create_token_string_mapping,
+    _create_token_embedding,
+    _create_position_embedding,
 )
 
 class TokenizeTests(TestCase):
@@ -54,6 +58,28 @@ class TokenizeTests(TestCase):
         self.assertEqual(mock_writer.return_value.writerow.call_args_list, [call([]), call([])])
 
 
+class EmbedTests(TestCase):
+
+    @patch("pydiffuser.clip.open", new_callable=mock_open)
+    @patch("pydiffuser.clip.json.load")
+    @patch("pydiffuser.clip.safetensors.safe_open")
+    @patch("pydiffuser.clip._create_token_embedding")
+    @patch("pydiffuser.clip._create_position_embedding")
+    @patch("pydiffuser.clip.torch.save")
+    def test_embed(self, mock_save, mock_pos_emb, mock_token_emb, mock_safe_open, mock_load, mock_open):
+        mock_load.return_value = [[1, 2, 3], [4, 5, 6]]
+        mock_token_emb.return_value = [10, 20]
+        mock_pos_emb.return_value = [30, 40]
+        embed("tokens.json", "model.safetensors", "output.pt")
+        mock_open.assert_called_once_with("tokens.json")
+        mock_load.assert_called_once_with(mock_open.return_value)
+        mock_safe_open.assert_called_once_with("model.safetensors", framework="pt", device="cpu")
+        safe_open_handle = mock_safe_open.return_value.__enter__.return_value
+        self.assertEqual(mock_token_emb.call_args[0][0], safe_open_handle)
+        self.assertTrue(torch.equal(mock_token_emb.call_args[0][1], torch.tensor([[1, 2, 3], [4, 5, 6]])))
+        self.assertEqual(mock_pos_emb.call_args[0][0], safe_open_handle)
+        self.assertTrue(torch.equal(mock_pos_emb.call_args[0][1], torch.tensor([[1, 2, 3], [4, 5, 6]])))
+        mock_save.assert_called_once_with([10, 20, 30, 40], "output.pt")
 
 
 class TextToTokensTests(TestCase):
@@ -102,3 +128,42 @@ class CreateTokenStringMappingTests(TestCase):
         tokenizer = CLIPTokenizer.from_pretrained(os.path.join(os.getcwd(), "assets", "clip_tokenizer"))
         result = _create_token_string_mapping(tokens, tokenizer)
         self.assertEqual(result, [[("the", 599), ("big", 1915), ("one", 1980)], [("is", 595), ("coming", 14916)]])
+
+
+class CreateTokenEmbeddingTests(TestCase):
+
+    def test_creates_token_embedding(self):
+        tensors = MagicMock()
+        tensors.keys.return_value = ["1", "2", "xxx.text_model.token_embedding.weight", "3"]
+        tensors.get_tensor.return_value = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        tokens = torch.tensor([[0, 2, 1]])
+        result = _create_token_embedding(tensors, tokens)
+        expected = torch.tensor([[[1.0, 2.0], [5.0, 6.0], [3.0, 4.0]]])
+        self.assertTrue(torch.equal(result, expected))
+
+    def test_raises_if_no_token_embedding(self):
+        tensors = MagicMock()
+        tensors.keys.return_value = ["something_else.weight"]
+        tokens = torch.tensor([[0, 1]])
+        with self.assertRaises(ValueError):
+            _create_token_embedding(tensors, tokens)
+
+
+class CreatePositionEmbeddingTests(TestCase):
+
+    def test_creates_position_embedding(self):
+        weight = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        tensors = MagicMock()
+        tensors.keys.return_value = ["1", "2", "xxx.text_model.position_embedding.weight", "3"]
+        tensors.get_tensor.return_value = weight
+        tokens = torch.tensor([[10, 20, 30]])
+        result = _create_position_embedding(tensors, tokens)
+        expected = torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        self.assertTrue(torch.equal(result, expected))
+
+    def test_raises_if_no_position_embedding(self):
+        tensors = MagicMock()
+        tensors.keys.return_value = ["something_else.weight"]
+        tokens = torch.tensor([[0, 1]])
+        with self.assertRaises(ValueError):
+            _create_position_embedding(tensors, tokens)

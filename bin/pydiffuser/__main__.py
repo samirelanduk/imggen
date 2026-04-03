@@ -1,6 +1,6 @@
 
 import argparse
-from .clip import tokenize
+from .clip import tokenize, embed
 from .latent import save_blank_latent
 
 def main():
@@ -13,6 +13,12 @@ def main():
     p.add_argument("--tokens", type=str, required=False)
     p.add_argument("--mappings", type=str, required=False)
     p.set_defaults(func=lambda args: tokenize(args.text, args.clip_tokenizer, args.tokens, args.mappings))
+
+    p = subparsers.add_parser("clip_embed")
+    p.add_argument("--tokens", type=str, required=True)
+    p.add_argument("--model", type=str, required=True)
+    p.add_argument("--output", type=str, required=False)
+    p.set_defaults(func=lambda args: embed(args.tokens, args.model, args.output))
 
     p = subparsers.add_parser("save_blank_latent")
     p.add_argument("--path", type=str, required=True)

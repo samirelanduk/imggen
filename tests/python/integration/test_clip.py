@@ -3,6 +3,7 @@ import tempfile
 import os
 import shutil
 import json
+import torch
 
 class ClipTokenizeTests(IntegrationTestCase):
 
@@ -36,6 +37,7 @@ class ClipTokenizeTests(IntegrationTestCase):
         ] + ["<|endoftext|>,49407"] * 69)
     
     def test_clip_tokenize_long_prompt(self):
+        # Run command
         prompt = "A beautiful sunset over the ocean. The sky is clear and the ocean is calm. There are dolphins leaping, whales breaching, and birds flying overhead. It's the sort of thing you might see on a postcard. " * 3
         proc = self.run_command(["python", "-m", "pydiffuser", "clip_tokenize", "--text", prompt, "--clip_tokenizer", "assets/clip_tokenizer", "--tokens", os.path.join(self.temp_dir, "tokens.json"), "--mappings", os.path.join(self.temp_dir, "mappings.csv")])
         self.assertEqual(proc.returncode, 0)
@@ -218,3 +220,42 @@ class ClipTokenizeTests(IntegrationTestCase):
         proc = self.run_command(["python", "-m", "pydiffuser", "clip_tokenize", "--text", "A beautiful sunset over the ocean.", "--tokens", os.path.join(self.temp_dir, "tokens.json"), "--mappings", os.path.join(self.temp_dir, "mappings.csv")])
         self.assertEqual(proc.returncode, 2)
         self.assertIn("the following arguments are required: --clip_tokenizer", proc.stderr)
+
+
+class ClipEmbedTests(IntegrationTestCase):
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.temp_dir)
+    
+    def test_clip_embed(self):
+        # Run command
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--tokens", os.path.join("tests", "data", "tokens.json"), "--model", os.path.join("tests", "data", "test_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        self.assertEqual(proc.returncode, 0)
+
+        # Embeddings saved
+        with open(os.path.join(self.temp_dir, "embeddings.pt"), "rb") as f:
+            embeddings = torch.load(f)
+        self.assertEqual(embeddings.shape, (3, 77, 12))
+        self.assertEqual(round(embeddings[0, 0, 0].item(), 3), 0.385)
+        self.assertEqual(round(embeddings[0, 0, 11].item(), 3), 0.036)
+        self.assertEqual(round(embeddings[0, 76, 0].item(), 3), -2.082)
+        self.assertEqual(round(embeddings[0, 76, 11].item(), 3), -0.533)
+        self.assertEqual(round(embeddings[1, 0, 0].item(), 3), -0.001)
+        self.assertEqual(round(embeddings[1, 0, 11].item(), 3), 1.848)
+        self.assertEqual(round(embeddings[1, 76, 0].item(), 3), -1.012)
+        self.assertEqual(round(embeddings[1, 76, 11].item(), 3), 0.025)
+        self.assertEqual(round(embeddings[2, 0, 0].item(), 3), 0.534)
+        self.assertEqual(round(embeddings[2, 0, 11].item(), 3), 1.369)
+        self.assertEqual(round(embeddings[2, 76, 0].item(), 3), -1.012)
+        self.assertEqual(round(embeddings[2, 76, 11].item(), 3), 0.025)
+    
+    def test_tokens_file_is_required(self):
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--model", os.path.join("tests", "data", "test_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("the following arguments are required: --tokens", proc.stderr)
+    
+    def test_model_file_is_required(self):
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--tokens", os.path.join("tests", "data", "tokens.json"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("the following arguments are required: --model", proc.stderr)

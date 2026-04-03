@@ -15,6 +15,6 @@ process CLIP_EMBEDDINGS {
 
     script:
     """
-    python3 ${moduleDir}/clip_embeddings.py ${tokens} ${clip_model}
+    python3 -m pydiffuser clip_embed --tokens ${tokens} --model ${clip_model} --output embeddings.pt
     """
 }
