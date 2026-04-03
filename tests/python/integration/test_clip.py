@@ -230,7 +230,7 @@ class ClipEmbedTests(IntegrationTestCase):
     
     def test_clip_embed(self):
         # Run command
-        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--tokens", os.path.join("tests", "data", "tokens.json"), "--model", os.path.join("tests", "data", "test_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--tokens", os.path.join("tests", "data", "tokens.json"), "--model", os.path.join("tests", "data", "clip_embedding_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
         self.assertEqual(proc.returncode, 0)
 
         # Embeddings saved
@@ -251,11 +251,50 @@ class ClipEmbedTests(IntegrationTestCase):
         self.assertEqual(round(embeddings[2, 76, 11].item(), 3), 0.025)
     
     def test_tokens_file_is_required(self):
-        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--model", os.path.join("tests", "data", "test_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--model", os.path.join("tests", "data", "clip_embedding_model.safetensors"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
         self.assertEqual(proc.returncode, 2)
         self.assertIn("the following arguments are required: --tokens", proc.stderr)
     
     def test_model_file_is_required(self):
         proc = self.run_command(["python", "-m", "pydiffuser", "clip_embed", "--tokens", os.path.join("tests", "data", "tokens.json"), "--output", os.path.join(self.temp_dir, "embeddings.pt")])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("the following arguments are required: --model", proc.stderr)
+
+
+class ClipEncodeTests(IntegrationTestCase):
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.temp_dir)
+    
+    def test_clip_encode(self):
+        # Run command
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_encode", "--embedding", os.path.join("tests", "data", "embedding.pt"), "--model", os.path.join("tests", "data", "clip_encode_model.safetensors"), "--output", os.path.join(self.temp_dir, "conditioning.pt")])
+        self.assertEqual(proc.returncode, 0)
+
+        # Encoding saved
+        with open(os.path.join(self.temp_dir, "conditioning.pt"), "rb") as f:
+            conditioning = torch.load(f)
+        self.assertEqual(conditioning.shape, (3, 77, 12))
+        self.assertEqual(round(conditioning[0, 0, 0].item(), 3), 0.698)
+        self.assertEqual(round(conditioning[0, 0, 11].item(), 3), -0.011)
+        self.assertEqual(round(conditioning[0, 76, 0].item(), 3), 0.556)
+        self.assertEqual(round(conditioning[0, 76, 11].item(), 3), -0.601)
+        self.assertEqual(round(conditioning[1, 0, 0].item(), 3), 0.541)
+        self.assertEqual(round(conditioning[1, 0, 11].item(), 3), -0.075)
+        self.assertEqual(round(conditioning[1, 76, 0].item(), 3), 0.938)
+        self.assertEqual(round(conditioning[1, 76, 11].item(), 3), 0.45)
+        self.assertEqual(round(conditioning[2, 0, 0].item(), 3), -0.292)
+        self.assertEqual(round(conditioning[2, 0, 11].item(), 3), 0.289)
+        self.assertEqual(round(conditioning[2, 76, 0].item(), 3), 0.575)
+        self.assertEqual(round(conditioning[2, 76, 11].item(), 3), -0.85)
+    
+    def test_embedding_file_is_required(self):
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_encode", "--model", os.path.join("tests", "data", "clip_encode_model.safetensors"), "--output", os.path.join(self.temp_dir, "conditioning.pt")])
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("the following arguments are required: --embedding", proc.stderr)
+    
+    def test_model_file_is_required(self):
+        proc = self.run_command(["python", "-m", "pydiffuser", "clip_encode", "--embedding", os.path.join("tests", "data", "embedding.pt"), "--output", os.path.join(self.temp_dir, "conditioning.pt")])
         self.assertEqual(proc.returncode, 2)
         self.assertIn("the following arguments are required: --model", proc.stderr)

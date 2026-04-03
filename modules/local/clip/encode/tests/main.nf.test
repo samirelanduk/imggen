@@ -9,8 +9,8 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = [[id: "test"], file("$moduleTestDir/embeddings.pt", checkIfExists: true)]
-                input[1] = file("$moduleTestDir/test_model.safetensors", checkIfExists: true)
+                input[0] = [[id: "test"], file("$projectDir/tests/data/embedding.pt", checkIfExists: true)]
+                input[1] = file("$projectDir/tests/data/clip_encode_model.safetensors", checkIfExists: true)
                 """
             }
         }

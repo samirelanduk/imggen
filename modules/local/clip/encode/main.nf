@@ -15,6 +15,6 @@ process CLIP_ENCODE {
 
     script:
     """
-    python3 ${moduleDir}/clip_encode.py ${embeddings} ${clip_model}
+    python3 -m pydiffuser clip_encode --embedding "${embeddings}" --model "${clip_model}" --output conditioning.pt
     """
 }

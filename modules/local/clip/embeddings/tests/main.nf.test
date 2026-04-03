@@ -10,7 +10,7 @@ nextflow_process {
             process {
                 """
                 input[0] = [[id: "test"], file("$projectDir/tests/data/tokens.json", checkIfExists: true)]
-                input[1] = file("$projectDir/tests/data/test_model.safetensors", checkIfExists: true)
+                input[1] = file("$projectDir/tests/data/clip_embedding_model.safetensors", checkIfExists: true)
                 """
             }
         }
