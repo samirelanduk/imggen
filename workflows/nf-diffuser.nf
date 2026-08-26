@@ -15,7 +15,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nf-d
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow NF-DIFFUSER {
+workflow NF_DIFFUSER {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input

@@ -13,7 +13,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { NF-DIFFUSER  } from './workflows/nf-diffuser'
+include { NF_DIFFUSER  } from './workflows/nf-diffuser'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_nf-diffuser_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nf-diffuser_pipeline'
 /*
@@ -25,7 +25,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nf-d
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow SAMIRELANDUK_NF-DIFFUSER {
+workflow SAMIRELANDUK_NF_DIFFUSER {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -35,7 +35,7 @@ workflow SAMIRELANDUK_NF-DIFFUSER {
     //
     // WORKFLOW: Run pipeline
     //
-    NF-DIFFUSER (
+    NF_DIFFUSER (
         samplesheet,
         params.multiqc_config,
         params.multiqc_logo,
@@ -43,7 +43,7 @@ workflow SAMIRELANDUK_NF-DIFFUSER {
         params.outdir,
     )
     emit:
-    multiqc_report = NF-DIFFUSER.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = NF_DIFFUSER.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,7 +72,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    SAMIRELANDUK_NF-DIFFUSER (
+    SAMIRELANDUK_NF_DIFFUSER (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -84,7 +84,7 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        SAMIRELANDUK_NF-DIFFUSER.out.multiqc_report
+        SAMIRELANDUK_NF_DIFFUSER.out.multiqc_report
     )
 }
 
