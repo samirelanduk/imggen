@@ -2,6 +2,8 @@ process TOKENIZE {
     tag "$meta.id"
     label "process_single"
 
+    conda "${moduleDir}/environment.yml"
+
     input:
     tuple val(meta), val(prompt)
     path tokenizer
