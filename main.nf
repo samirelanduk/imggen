@@ -13,9 +13,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { NF_DIFFUSER  } from './workflows/nf-diffuser'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_nf-diffuser_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nf-diffuser_pipeline'
+include { DIFFUSER  } from './workflows/diffuser'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_diffuser_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_diffuser_pipeline'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
@@ -25,7 +25,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nf-d
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow SAMIRELANDUK_NF_DIFFUSER {
+workflow NF_DIFFUSER {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -35,7 +35,7 @@ workflow SAMIRELANDUK_NF_DIFFUSER {
     //
     // WORKFLOW: Run pipeline
     //
-    NF_DIFFUSER (
+    DIFFUSER (
         samplesheet,
         params.multiqc_config,
         params.multiqc_logo,
@@ -43,7 +43,7 @@ workflow SAMIRELANDUK_NF_DIFFUSER {
         params.outdir,
     )
     emit:
-    multiqc_report = NF_DIFFUSER.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = DIFFUSER.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,7 +72,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    SAMIRELANDUK_NF_DIFFUSER (
+    NF_DIFFUSER (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -84,7 +84,7 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        SAMIRELANDUK_NF_DIFFUSER.out.multiqc_report
+        NF_DIFFUSER.out.multiqc_report
     )
 }
 
