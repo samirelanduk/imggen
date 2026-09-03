@@ -14,7 +14,7 @@
 
 ## Introduction
 
-**samirelanduk/nf-diffuser** is a bioinformatics pipeline that ...
+**samirelanduk/nf-diffuser** is a generative AI pipeline that creates media using diffusion techniques.
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
@@ -39,11 +39,12 @@ First, prepare a samplesheet with your input data that looks as follows:
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,positive,negative,width,height
+TREE,"A photo of a tree","animals, people, text",800,600
+SKY,"A beautiful panorama of the sky","low-quality, blurry, dark",,
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+Each row represents a prompt that describes a desired image.
 
 -->
 
@@ -53,7 +54,7 @@ Now, you can run the pipeline using:
 
 ```bash
 nextflow run samirelanduk/nf-diffuser \
-   -profile <docker/singularity/.../institute> \
+   -profile <docker/singularity/conda> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
 ```

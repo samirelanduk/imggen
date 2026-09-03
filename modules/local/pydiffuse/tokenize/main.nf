@@ -3,6 +3,7 @@ process TOKENIZE {
     label "process_single"
 
     conda "${moduleDir}/environment.yml"
+    container "docker.io/samirelanduk/pydiffuse:0.2.0"
 
     input:
     tuple val(meta), val(prompt)
@@ -26,7 +27,7 @@ process TOKENIZE {
         .replace('$', '\\$')
         .replace('`', '\\`')
     """
-    pydiffuse tokenize \
+    pydiffuse clip tokenize \
       "$promptArg" \
       --tokens ${meta.id}_tokens.json \
       --mappings ${meta.id}_mappings.json \

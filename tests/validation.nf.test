@@ -1,0 +1,296 @@
+nextflow_pipeline {
+
+    name "Test pipeline validation failures"
+    script "../main.nf"
+    tag "pipeline"
+    tag "validation"
+
+    test("Fails when --outdir is missing") {
+
+        when {
+            params {
+                outdir = null
+                input  = "${projectDir}/tests/data/samplesheet.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('Missing required parameter(s): outdir') } }
+            )
+        }
+    }
+
+    test("Fails when --input is missing") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = null
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('Missing required parameter(s): input') } }
+            )
+        }
+    }
+
+    test("Fails when --input does not have a .csv extension") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "${projectDir}/assets/schema_input.json"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('does not match regular expression [^\\S+\\.csv$]') } }
+            )
+        }
+    }
+
+    test("Fails when --input path does not exist") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "${projectDir}/tests/data/does_not_exist.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains("does_not_exist.csv' does not exist") } }
+            )
+        }
+    }
+
+    test("Fails when a samplesheet row is missing the sample name") {
+
+        setup {
+            def sheet = new File("$launchDir/missing_sample.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                ,A photo of a tree,blurry,800,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/missing_sample.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('Missing required field(s): sample') } }
+            )
+        }
+    }
+
+    test("Fails when a sample name contains spaces") {
+
+        setup {
+            def sheet = new File("$launchDir/spaces_sample.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                bad sample,A photo of a tree,blurry,800,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/spaces_sample.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stderr.any { it.contains('Sample name must be provided and cannot contain spaces') } }
+            )
+        }
+    }
+
+    test("Fails when a samplesheet row is missing the positive prompt") {
+
+        setup {
+            def sheet = new File("$launchDir/missing_positive.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,,blurry,800,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/missing_positive.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('Missing required field(s): positive') } }
+            )
+        }
+    }
+
+    test("Fails when a samplesheet row is missing the negative prompt") {
+
+        setup {
+            def sheet = new File("$launchDir/missing_negative.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,A photo of a tree,,800,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/missing_negative.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains('Missing required field(s): negative') } }
+            )
+        }
+    }
+
+    test("Fails when the width is not an integer") {
+
+        setup {
+            def sheet = new File("$launchDir/bad_width.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,A photo of a tree,blurry,not_a_number,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/bad_width.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains("Error for field 'width'") && it.contains('Width must be an integer') } }
+            )
+        }
+    }
+
+    test("Fails when the height is not an integer") {
+
+        setup {
+            def sheet = new File("$launchDir/bad_height.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,A photo of a tree,blurry,800,not_a_number
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/bad_height.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains("Error for field 'height'") && it.contains('Height must be an integer') } }
+            )
+        }
+    }
+
+    test("Fails when the width is not a whole number") {
+
+        setup {
+            def sheet = new File("$launchDir/fractional_width.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,A photo of a tree,blurry,800.5,600
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/fractional_width.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains("Error for field 'width'") && it.contains('Width must be an integer') } }
+            )
+        }
+    }
+
+    test("Fails when the height is not a whole number") {
+
+        setup {
+            def sheet = new File("$launchDir/fractional_height.csv")
+            sheet.parentFile.mkdirs()
+            sheet.text = """\
+                sample,positive,negative,width,height
+                TREE,A photo of a tree,blurry,800,600.5
+                """.stripIndent()
+        }
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input  = "$launchDir/fractional_height.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.stdout.any { it.contains('ERROR ~ Validation of pipeline parameters failed!') } },
+                { assert workflow.stderr.any { it.contains("Error for field 'height'") && it.contains('Height must be an integer') } }
+            )
+        }
+    }
+
+
+}
